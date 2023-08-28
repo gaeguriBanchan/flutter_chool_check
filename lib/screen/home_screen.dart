@@ -19,13 +19,29 @@ class _HomeScreenState extends State<HomeScreen> {
     target: companyLatLng,
     zoom: 15,
   );
-  static const double distance = 100;
-  static Circle circle = Circle(
-    circleId: const CircleId('circle'),
+  static const double okDistance = 100;
+  static Circle withDistanceCircle = Circle(
+    circleId: const CircleId('withDistanceCircle'),
     center: companyLatLng,
     fillColor: Colors.blue.withOpacity(0.5),
-    radius: distance,
+    radius: okDistance,
     strokeColor: Colors.blue,
+    strokeWidth: 1,
+  );
+  static Circle notWithDistanceCircle = Circle(
+    circleId: const CircleId('notWithDistanceCircle'),
+    center: companyLatLng,
+    fillColor: Colors.red.withOpacity(0.5),
+    radius: okDistance,
+    strokeColor: Colors.red,
+    strokeWidth: 1,
+  );
+  static Circle checkDoneCircle = Circle(
+    circleId: const CircleId('checkDoneCircle'),
+    center: companyLatLng,
+    fillColor: Colors.green.withOpacity(0.5),
+    radius: okDistance,
+    strokeColor: Colors.green,
     strokeWidth: 1,
   );
   static const Marker marker = Marker(
@@ -47,16 +63,41 @@ class _HomeScreenState extends State<HomeScreen> {
             }
 
             if (snapshot.data == '위치 권한이 허가 되었습니다') {
-              return Column(
-                children: [
-                  _CustomGoogleMap(
-                    initialPosition: initialPosition,
-                    circle: circle,
-                    marker: marker,
-                  ),
-                  const _ChoolCheckButton(),
-                ],
-              );
+              return StreamBuilder<Position>(
+                  stream: Geolocator.getPositionStream(),
+                  builder: (context, snapshot) {
+                    // print(snapshot.data);
+                    bool isWithinRange = false;
+
+                    if (snapshot.hasData) {
+                      final start = snapshot.data!;
+                      const end = companyLatLng;
+
+                      final distance = Geolocator.distanceBetween(
+                        start.latitude,
+                        start.longitude,
+                        end.latitude,
+                        end.longitude,
+                      );
+
+                      if (distance < okDistance) {
+                        isWithinRange = true;
+                      }
+                    }
+
+                    return Column(
+                      children: [
+                        _CustomGoogleMap(
+                          initialPosition: initialPosition,
+                          circle: isWithinRange
+                              ? withDistanceCircle
+                              : notWithDistanceCircle,
+                          marker: marker,
+                        ),
+                        const _ChoolCheckButton(),
+                      ],
+                    );
+                  });
             }
 
             return Center(
