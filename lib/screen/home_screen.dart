@@ -28,6 +28,10 @@ class _HomeScreenState extends State<HomeScreen> {
     strokeColor: Colors.blue,
     strokeWidth: 1,
   );
+  static const Marker marker = Marker(
+    markerId: MarkerId('marker'),
+    position: companyLatLng,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _CustomGoogleMap(
                     initialPosition: initialPosition,
                     circle: circle,
+                    marker: marker,
                   ),
                   const _ChoolCheckButton(),
                 ],
@@ -113,10 +118,12 @@ class _CustomGoogleMap extends StatelessWidget {
   const _CustomGoogleMap({
     required this.initialPosition,
     required this.circle,
+    required this.marker,
   });
 
   final CameraPosition initialPosition;
   final Circle circle;
+  final Marker marker;
 
   @override
   Widget build(BuildContext context) {
@@ -128,6 +135,7 @@ class _CustomGoogleMap extends StatelessWidget {
         myLocationEnabled: true,
         myLocationButtonEnabled: false,
         circles: {circle},
+        markers: {marker},
       ),
     );
   }
