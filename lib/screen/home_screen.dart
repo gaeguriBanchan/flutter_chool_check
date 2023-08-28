@@ -12,25 +12,53 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   // latitude - 위도 , longitude - 경도
   static const LatLng companyLatLng = LatLng(
-    37.5233273,
-    126.921252,
+    35.832455,
+    128.735801,
   );
   static const CameraPosition initialPosition = CameraPosition(
     target: companyLatLng,
     zoom: 15,
   );
+  static const double distance = 100;
+  static Circle circle = Circle(
+    circleId: const CircleId('circle'),
+    center: companyLatLng,
+    fillColor: Colors.blue.withOpacity(0.5),
+    radius: distance,
+    strokeColor: Colors.blue,
+    strokeWidth: 1,
+  );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: renderAppBar(),
-      body: const Column(
-        children: [
-          _CustomGoogleMap(initialPosition: initialPosition),
-          _ChoolCheckButton(),
-        ],
-      ),
-    );
+        appBar: renderAppBar(),
+        body: FutureBuilder(
+          future: checkPermission(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+
+            if (snapshot.data == '위치 권한이 허가 되었습니다') {
+              return Column(
+                children: [
+                  _CustomGoogleMap(
+                    initialPosition: initialPosition,
+                    circle: circle,
+                  ),
+                  const _ChoolCheckButton(),
+                ],
+              );
+            }
+
+            return Center(
+              child: Text(snapshot.data!),
+            );
+          },
+        ));
   }
 
   Future<String> checkPermission() async {
@@ -84,9 +112,11 @@ class _ChoolCheckButton extends StatelessWidget {
 class _CustomGoogleMap extends StatelessWidget {
   const _CustomGoogleMap({
     required this.initialPosition,
+    required this.circle,
   });
 
   final CameraPosition initialPosition;
+  final Circle circle;
 
   @override
   Widget build(BuildContext context) {
@@ -95,6 +125,9 @@ class _CustomGoogleMap extends StatelessWidget {
       child: GoogleMap(
         initialCameraPosition: initialPosition,
         mapType: MapType.normal,
+        myLocationEnabled: true,
+        myLocationButtonEnabled: false,
+        circles: {circle},
       ),
     );
   }
